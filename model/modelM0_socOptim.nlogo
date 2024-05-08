@@ -34,8 +34,8 @@ to setup
   ask turtles [
     set capital random-exponential scale
   ]
-  ;create-normalized-capital
-  ;;gini-on-capital
+  gini-on-capital
+
   reset-ticks
 end
 
@@ -73,18 +73,6 @@ to layout-turtles
   display
 end
 
-to create-normalized-capital
-  let scale 1
-  ask turtles [
-    set capital random-exponential scale
-  ]
-
-  ; Normaliser pour que le total soit égal à `total-capital`
-  let sum-capitals sum [capital] of turtles
-  ask turtles [
-    set capital (capital / sum-capitals)
-  ]
-end
 
 to gini-on-capital
   let _max-iteration 100
@@ -109,10 +97,13 @@ to gini-on-capital
     set _max-iteration _max-iteration - 1
   ]
 
+  ; Normaliser pour que le total soit égal à `total-capital`
+  let sum-capitals sum [capital] of turtles
+  ask turtles [
+    set capital (capital / sum-capitals)
+  ]
+
 end
-
-
-
 
 to-report calcul-gini
   let sorted-wealths sort [Capital] of turtles
