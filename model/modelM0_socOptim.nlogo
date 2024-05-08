@@ -54,6 +54,8 @@ to small-world-ring
 end
 
 to layout-turtles
+  let _max-iteration 100
+  while [_max-iteration > 0][
   if layout = "radial" and count turtles > 1 [
     let root-agent max-one-of turtles [ count my-links ]
     layout-radial turtles links root-agent
@@ -71,6 +73,8 @@ to layout-turtles
     layout-tutte max-n-of (count turtles * 0.5) turtles [ count my-links ] links 12
   ]
   display
+   set _max-iteration _max-iteration - 1
+  ]
 end
 
 
@@ -190,7 +194,7 @@ CHOOSER
 layout
 layout
 "spring" "circle" "radial" "tutte"
-0
+1
 
 SLIDER
 20
@@ -222,23 +226,6 @@ rewire-prob
 NIL
 HORIZONTAL
 
-BUTTON
-90
-11
-161
-44
-layout
-layout-turtles
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
 SLIDER
 685
 30
@@ -264,6 +251,23 @@ calcul-gini
 17
 1
 11
+
+BUTTON
+95
+10
+162
+43
+layout
+layout-turtles
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
