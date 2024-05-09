@@ -9,13 +9,14 @@ turtles-own
 [
   ;; this is used to mark turtles we have already visited
   capital
+  solicitations-nb
 ]
 
 globals
 [
   seuil-gini
   gini-index-reserve
-
+  mean-solicitation-nb
   lorenz-points
 ]
 
@@ -54,7 +55,7 @@ to small-world-ring
 end
 
 to layout-turtles
-  let _max-iteration 100
+  let _max-iteration 400
   while [_max-iteration > 0][
   if layout = "radial" and count turtles > 1 [
     let root-agent max-one-of turtles [ count my-links ]
@@ -109,6 +110,47 @@ to gini-on-capital
 
 end
 
+to go
+  putDifficulties
+  ask turtles [
+   askHelp
+  ]
+  updatePlot
+  updateGloabls
+  tick
+end
+
+to putDifficulties
+  while [ nb-difficulties > 0][
+    if typeOfDifficulties = "richest" [
+      ask one-of turtles with-max [capital][
+        set capital 0
+      ]
+    ]
+
+    if typeOfDifficulties = "poorest" [
+      ask one-of turtles with-max [capital][
+        set capital 0
+      ]
+    ]
+    set nb-difficulties nb-difficulties - 1
+  ]
+end
+
+to askHelp
+  ;; tutle context
+  if capital = 0 [
+    show "loan proc"
+    let _loan 0
+    ask link-neighbors with-max [capital][
+      set _loan capital / 3
+      set capital capital - _loan
+      set  solicitations-nb solicitations-nb + 1
+    ]
+    set capital capital + _loan
+  ]
+end
+
 to-report calcul-gini
   let sorted-wealths sort [Capital] of turtles
   let total-wealth sum sorted-wealths
@@ -126,11 +168,23 @@ to-report calcul-gini
   report gini-index-reserve
 
 end
+
+to updatePlot
+ set-current-plot "soliciations"
+ ask turtles [
+   set-plot-pen-color color ;pour renvoyer la couleur de la tortue
+   plotxy ticks solicitations-nb
+ ]
+end
+
+to updateGloabls
+  set mean-solicitation-nb sum[solicitations-nb] of turtles / count turtles
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+220
 10
-647
+657
 448
 -1
 -1
@@ -194,7 +248,7 @@ CHOOSER
 layout
 layout
 "spring" "circle" "radial" "tutte"
-1
+0
 
 SLIDER
 20
@@ -235,7 +289,7 @@ gini-expected
 gini-expected
 0
 1
-0.29
+0.1
 0.01
 1
 NIL
@@ -253,9 +307,9 @@ calcul-gini
 11
 
 BUTTON
-95
+85
 10
-162
+152
 43
 layout
 layout-turtles
@@ -269,10 +323,76 @@ NIL
 NIL
 1
 
+SLIDER
+685
+105
+857
+138
+nb-difficulties
+nb-difficulties
+0
+100
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+CHOOSER
+685
+140
+823
+185
+typeOfDifficulties
+typeOfDifficulties
+"richest" "poorest"
+1
+
+BUTTON
+150
+10
+213
+43
+NIL
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+PLOT
+690
+280
+890
+430
+soliciations
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 2 -16777216 true "" ""
+
 @#$#@#$#@
 ## WHAT IS IT?
 
 (a general understanding of what the model is trying to show or explain)
+
+avec le slider "nb-difficulties", on régles le nombre de personnes en difficulté.
+On va dans un premier temps mettre en difficulté les pauvres, mais on pourra dans un 2nd temps.
+
+Il faut que je m'occuper de des prets dans la procedure askHelp
+
 
 ## HOW IT WORKS
 
@@ -615,6 +735,31 @@ NetLogo 6.3.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment_difficulties_gini" repetitions="20" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean-solicitation-nb</metric>
+    <steppedValueSet variable="gini-expected" first="0.1" step="0.1" last="1"/>
+    <enumeratedValueSet variable="typeOfDifficulties">
+      <value value="&quot;poorest&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="neighborhood-size">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="nb-difficulties" first="10" step="10" last="100"/>
+    <enumeratedValueSet variable="layout">
+      <value value="&quot;spring&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="rewire-prob">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
